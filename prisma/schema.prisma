@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// ============================================
+// USER MANAGEMENT & AUTHENTICATION
+// ============================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String   // Hashed with bcrypt
+  role      String   @default("USER") // "USER" | "ADMIN"
+  
+  // Authentication hardening fields
+  failedLoginAttempts Int      @default(0)
+  lockedUntil         DateTime? // Account lock expiry
+  lastLoginAt         DateTime?
+  lastLoginIp         String?
+  
+  // Soft delete support (never hard delete users in finance apps)
+  deletedAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  resetCodes     PasswordResetCode[]
+  sessions       Session[]
+  activityLogs   ActivityLog[]
+  transactions   Transaction[]
+  loginAttempts  LoginAttempt[]
+  
+  @@index([email])
+  @@index([deletedAt]) // Fast filtering of active users
+}
+
+model PasswordResetCode {
+  id        String   @id @default(cuid())
+  code      String   // Hashed 6-digit code
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdBy String   // Admin ID who generated it
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// Track login attempts for security monitoring
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  userId    String?  // Null if email not found
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email     String
+  success   Boolean
+  ip        String
+  userAgent String?
+  reason    String?  // "invalid_password", "account_locked", etc.
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([email])
+  @@index([createdAt]) // For cleanup of old attempts
+}
+
+// ============================================
+// SESSION MANAGEMENT (Device Tracking)
+// ============================================
+
+model Session {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  refreshToken  String   @unique // Hashed refresh token
+  
+  // Device/browser information for transparency
+  deviceName    String?  // e.g., "Chrome on Windows", "Safari on iPhone"
+  ip            String
+  userAgent     String?
+  
+  // Activity tracking
+  lastActiveAt  DateTime @default(now())
+  expiresAt     DateTime
+  revokedAt     DateTime? // Manual logout or "logout everywhere"
+  
+  createdAt     DateTime @default(now())
+  
+  @@index([userId])
+  @@index([refreshToken])
+  @@index([expiresAt])
+}
+
+// ============================================
+// AUDIT TRAIL & TRANSPARENCY
+// ============================================
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  action    String   // "login", "logout", "password_change", "data_export", "transaction_create", etc.
+  
+  // Contextual metadata (stored as JSON-friendly text)
+  metadata  String?  // JSON string: { "ip": "...", "device": "...", "exportType": "csv", etc. }
+  
+  result    String   @default("success") // "success", "failure"
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt]) // For time-based queries and retention cleanup
+}
+
+// ============================================
+// FINANCIAL TRANSACTIONS
+// ============================================
+
+model Transaction {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type        String   // "income", "expense", "transfer"
+  amount      Float
+  currency    String   @default("USD")
+  category    String?  // "salary", "groceries", "rent", etc.
+  description String?
+  date        DateTime @default(now())
+  
+  // Soft delete (never permanently delete financial records)
+  deletedAt   DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([deletedAt]) // Fast filtering of active transactions
+  @@index([date])      // Common query: transactions in date range
+}
+
+// ============================================
+// FEATURE FLAGS (Runtime Control)
+// ============================================
+
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  key         String   @unique // "data-export", "pdf-export", "analytics", etc.
+  
+  isEnabled   Boolean  @default(true)
+  rolloutPct  Int      @default(100) // 0-100, allows gradual rollout
+  
+  description String?  // Human-readable description of what this flag controls
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([key])
+}
+
+// ============================================
+// LEGACY SYSTEM LOG (kept for backward compatibility)
+// ============================================
+
+model SystemLog {
+  id        String   @id @default(cuid())
+  action    String
+  details   String?
+  timestamp DateTime @default(now())
+  
+  @@index([timestamp])
+}

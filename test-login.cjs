@@ -1,0 +1,37 @@
+
+const http = require('http');
+
+const data = JSON.stringify({
+    email: 'rebika4553@liorashop.com',
+    password: 'butela',
+    name: 'Rebika',
+    ip: '127.0.0.1',
+    userAgent: 'test-script'
+});
+
+const options = {
+    hostname: 'localhost',
+    port: 3001,
+    path: '/api/v1/auth/signup',
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': data.length
+    }
+};
+
+const req = http.request(options, (res) => {
+    let body = '';
+    res.on('data', (chunk) => body += chunk);
+    res.on('end', () => {
+        console.log(`Status: ${res.statusCode}`);
+        console.log(`Body: ${body}`);
+    });
+});
+
+req.on('error', (error) => {
+    console.error(error);
+});
+
+req.write(data);
+req.end();

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # Database (Postgres)
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: unity
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: unity_finance
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # Cache (Redis)
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # Backend API
+  api:
+    build: ./server
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgres://unity:password@db:5432/unity_finance
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: production
+      FRONTEND_URL: http://localhost:5173
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  postgres_data:

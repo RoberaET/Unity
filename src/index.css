@@ -1,0 +1,134 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CoupleFinance Design System - Electric Modern */
+
+@layer base {
+  :root {
+    /* Stark White Backgrounds */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    /* Deep Navy Black */
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Deep Forest/Emerald Green */
+    --primary: 158 75% 34%; 
+    /* #138E61 approx */
+    --primary-foreground: 0 0% 100%;
+
+    /* Cool Gray Secondary */
+    --secondary: 150 20% 96%;
+    --secondary-foreground: 160 40% 11%;
+
+    --muted: 150 20% 96%;
+    --muted-foreground: 160 16% 47%;
+
+    --accent: 158 64% 52%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 160 20% 91%;
+    --input: 160 20% 91%;
+    --ring: 158 64% 52%;
+
+    --radius: 1rem;
+    /* Chunkier rounded corners */
+
+    /* Finance Colors */
+    --success: 142 71% 45%;
+    /* Modern Green */
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #059669 0%, #047857 100%);
+    --gradient-hero: linear-gradient(180deg, rgba(5, 150, 105, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    --card: 217 33% 17%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 158 60% 45%;
+    --primary-foreground: 160 40% 98%;
+
+    --secondary: 160 30% 17%;
+    --secondary-foreground: 160 40% 98%;
+
+    --muted: 160 30% 17%;
+    --muted-foreground: 160 20% 65%;
+
+    --accent: 160 30% 17%;
+    --accent-foreground: 160 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 160 30% 17%;
+    --input: 160 30% 17%;
+    --ring: 158 64% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased font-sans;
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  /* Improved Typography */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply tracking-tight;
+  }
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Modern Button Glow */
+  .shadow-glow {
+    box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.5);
+  }
+
+  .glass-nav {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+}
